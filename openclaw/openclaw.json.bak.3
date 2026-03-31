@@ -1,0 +1,415 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.8",
+    "lastTouchedAt": "2026-03-12T01:42:13.779Z"
+  },
+  "env": {
+    "IMGBB_API_KEY": "360a7df508df96cf8f7a6baf095d3647"
+  },
+  "wizard": {
+    "lastRunAt": "2026-03-11T15:09:54.702Z",
+    "lastRunVersion": "2026.3.8",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "aicodewith:default": {
+        "provider": "aicodewith",
+        "mode": "api_key"
+      },
+      "openai-codex:default": {
+        "provider": "openai-codex",
+        "mode": "oauth"
+      }
+    },
+    "order": {
+      "aicodewith-gpt": [
+        "aicodewith:default"
+      ],
+      "aicodewith-claude": [
+        "aicodewith:default"
+      ],
+      "aicodewith-gemini": [
+        "aicodewith:default"
+      ]
+    }
+  },
+  "models": {
+    "providers": {
+      "aicodewith-gpt": {
+        "baseUrl": "https://api.aicodewith.com/chatgpt/v1",
+        "apiKey": "sk-acw-811d8589-fcf0bd87c0cd245f",
+        "api": "openai-responses",
+        "models": [
+          {
+            "id": "gpt-5.3-codex",
+            "name": "GPT-5.3 Codex",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 400000,
+            "maxTokens": 128000
+          },
+          {
+            "id": "gpt-5.2",
+            "name": "GPT-5.2",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 400000,
+            "maxTokens": 128000
+          }
+        ]
+      },
+      "aicodewith-claude": {
+        "baseUrl": "https://api.aicodewith.com",
+        "apiKey": "sk-acw-811d8589-fcf0bd87c0cd245f",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "claude-opus-4-6-20260205",
+            "name": "Claude Opus 4.6",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 64000
+          },
+          {
+            "id": "claude-sonnet-4-6",
+            "name": "Claude Sonnet 4.6",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 64000
+          },
+          {
+            "id": "claude-haiku-4-5-20251001",
+            "name": "Claude Haiku 4.5",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "aicodewith-gemini": {
+        "baseUrl": "https://api.aicodewith.com/gemini_cli/v1beta",
+        "apiKey": "sk-acw-811d8589-fcf0bd87c0cd245f",
+        "api": "google-generative-ai",
+        "models": [
+          {
+            "id": "gemini-3-pro",
+            "name": "Gemini 3 Pro",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 1048576,
+            "maxTokens": 65536
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openai-codex/gpt-5.4"
+      },
+      "models": {
+        "aicodewith-claude/claude-sonnet-4-6": {},
+        "aicodewith-claude/claude-haiku-4-5-20251001": {},
+        "openai-codex/gpt-5.4": {},
+        "aicodewith-gpt/gpt-5.3-codex": {},
+        "aicodewith-gpt/gpt-5.2": {},
+        "aicodewith-claude/claude-opus-4-6-20260205": {},
+        "aicodewith-gemini/gemini-3-pro": {}
+      },
+      "workspace": "/Users/mono/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      }
+    },
+    "list": [
+      {
+        "id": "boss",
+        "workspace": "/Users/mono/.openclaw/workspace-boss",
+        "model": {
+          "primary": "openai-codex/gpt-5.4"
+        }
+      },
+      {
+        "id": "collector",
+        "workspace": "/Users/mono/.openclaw/workspace-collector",
+        "model": {
+          "primary": "aicodewith-claude/claude-haiku-4-5-20251001"
+        }
+      },
+      {
+        "id": "content",
+        "workspace": "/Users/mono/.openclaw/workspace-content",
+        "model": {
+          "primary": "aicodewith-claude/claude-haiku-4-5-20251001"
+        }
+      },
+      {
+        "id": "knowledge",
+        "workspace": "/Users/mono/.openclaw/workspace-knowledge",
+        "model": {
+          "primary": "aicodewith-claude/claude-haiku-4-5-20251001"
+        }
+      },
+      {
+        "id": "devops",
+        "workspace": "/Users/mono/.openclaw/workspace-devops",
+        "model": {
+          "primary": "aicodewith-claude/claude-haiku-4-5-20251001"
+        }
+      },
+      {
+        "id": "search",
+        "workspace": "/Users/mono/.openclaw/workspace-search",
+        "model": {
+          "primary": "aicodewith-claude/claude-haiku-4-5-20251001"
+        }
+      },
+      {
+        "id": "telegram-bot",
+        "workspace": "/Users/mono/.openclaw/workspace-telegram-bot",
+        "model": {
+          "primary": "aicodewith-claude/claude-haiku-4-5-20251001"
+        }
+      }
+    ]
+  },
+  "tools": {
+    "profile": "coding"
+  },
+  "bindings": [
+    {
+      "agentId": "boss",
+      "match": {
+        "channel": "telegram",
+        "accountId": "boss-bot"
+      }
+    },
+    {
+      "agentId": "collector",
+      "match": {
+        "channel": "telegram",
+        "accountId": "collector-bot"
+      }
+    },
+    {
+      "agentId": "content",
+      "match": {
+        "channel": "telegram",
+        "accountId": "content-bot"
+      }
+    },
+    {
+      "agentId": "knowledge",
+      "match": {
+        "channel": "telegram",
+        "accountId": "knowledge-bot"
+      }
+    },
+    {
+      "agentId": "devops",
+      "match": {
+        "channel": "telegram",
+        "accountId": "devops-bot"
+      }
+    },
+    {
+      "agentId": "search",
+      "match": {
+        "channel": "telegram",
+        "accountId": "search-bot"
+      }
+    },
+    {
+      "agentId": "telegram-bot",
+      "match": {
+        "channel": "telegram",
+        "accountId": "telegram-bot-bot"
+      }
+    }
+  ],
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": {
+          "enabled": true
+        },
+        "bootstrap-extra-files": {
+          "enabled": true
+        },
+        "command-logger": {
+          "enabled": true
+        },
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "groupAllowFrom": [
+        "7149268154"
+      ],
+      "groupPolicy": "allowlist",
+      "streaming": "partial",
+      "accounts": {
+        "boss-bot": {
+          "dmPolicy": "pairing",
+          "botToken": "8480914755:AAEkDqG-tnpgVdVB2hvp_VZcsLdsVEqIDb0",
+          "groupAllowFrom": [
+            "7149268154"
+          ],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "collector-bot": {
+          "dmPolicy": "pairing",
+          "botToken": "8628852297:AAHv0l4N3XFjiJLM8DGE4Q4VIDS4fhm2G1c",
+          "groupAllowFrom": [
+            "7149268154"
+          ],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "search-bot": {
+          "dmPolicy": "pairing",
+          "botToken": "8415323586:AAGutqyR2P3aXAxrkC6nLMYkgtjL35smAKk",
+          "groupAllowFrom": [
+            "7149268154"
+          ],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "telegram-bot-bot": {
+          "dmPolicy": "pairing",
+          "botToken": "8251897835:AAHt5h7gfWk8tUQdzUmWYlwtUcicqOW-nRI",
+          "groupAllowFrom": [
+            "7149268154"
+          ],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "default": {
+          "dmPolicy": "allowlist",
+          "botToken": "8017208582:AAGeAC_qa8HhzfY9C9wYMq6kloR_iwlSGKs",
+          "allowFrom": [
+            "7149268154"
+          ],
+          "groupAllowFrom": [
+            "7149268154"
+          ],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        }
+      }
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "0e70e36e97e7dd3170653f0ee277ec6147bfbf79891f1593"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "load": {
+      "extraDirs": [
+        "~/.openclaw/skills-global"
+      ],
+      "watch": true
+    }
+  },
+  "plugins": {
+    "allow": [
+      "telegram",
+      "openclaw-aicodewith-auth"
+    ],
+    "entries": {
+      "telegram": {
+        "enabled": true
+      },
+      "openclaw-aicodewith-auth": {
+        "enabled": true
+      }
+    },
+    "installs": {}
+  }
+}

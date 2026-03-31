@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "autoAnalyze": true,
+  "analyzeInterval": 3600,
+  "recentMessages": 50,
+  "notifyOnSuggestions": true,
+  "notifyChannel": "telegram",
+  "notifyTarget": "7149268154",
+  "skills": [
+    "multi-agent",
+    "agent-monitor",
+    "skill-optimizer"
+  ]
+}

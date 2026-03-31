@@ -1,0 +1,16 @@
+{
+  "agents": [
+    {
+      "name": "boss",
+      "workspace": "/Users/mono/.openclaw/workspace-boss",
+      "role": "manager",
+      "description": "黑奴头子 - 管理和协调其他 agents"
+    },
+    {
+      "name": "search",
+      "workspace": "/Users/mono/.openclaw/workspace-search",
+      "role": "searcher",
+      "description": "搜索黑奴 - 网络搜索和信息检索"
+    }
+  ]
+}

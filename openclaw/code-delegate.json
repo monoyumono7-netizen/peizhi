@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "autoDetect": true,
+  "opencodePath": "/usr/local/bin/opencode",
+  "defaultAgent": "hephaestus",
+  "defaultModel": "aicodewith/gpt-5.3-codex",
+  "workingDirectory": "/Users/mono/.openclaw/workspace-search",
+  "timeout": 300,
+  "logTasks": true,
+  "useITerm": true,
+  "keywords": {
+    "code": ["代码", "code", "编写", "write", "创建", "create", "实现", "implement"],
+    "read": ["查看", "read", "分析", "analyze", "检查", "check", "理解", "understand"],
+    "write": ["编写", "write", "创建", "create", "实现", "implement", "开发", "develop"],
+    "debug": ["调试", "debug", "修复", "fix", "bug", "错误", "error"],
+    "refactor": ["重构", "refactor", "优化", "optimize", "改进", "improve"],
+    "test": ["测试", "test", "单元测试", "unit test"]
+  },
+  "fileExtensions": [
+    ".js", ".ts", ".py", ".go", ".java", ".cpp", ".c", ".rs",
+    ".jsx", ".tsx", ".vue", ".svelte", ".html", ".css", ".scss",
+    ".json", ".yaml", ".toml", ".md", ".sh", ".bash"
+  ]
+}
