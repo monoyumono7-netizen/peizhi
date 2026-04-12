@@ -1,0 +1,48 @@
+{
+  "codebuddy-plugins-official": {
+    "type": "git",
+    "source": {
+      "source": "git",
+      "path": "https://cnb.cool/codebuddy/marketplace",
+      "url": "https://cnb.cool/codebuddy/marketplace"
+    },
+    "installLocation": "/Users/mono/.codebuddy/plugins/marketplaces/codebuddy-plugins-official",
+    "description": "Marketplace from https://cnb.cool/codebuddy/marketplace",
+    "lastUpdated": "2026-04-11T11:08:49.579Z",
+    "autoUpdate": true,
+    "isBuiltIn": true
+  },
+  "thedotmack_claude-mem": {
+    "type": "github",
+    "source": {
+      "source": "github",
+      "repo": "thedotmack/claude-mem"
+    },
+    "installLocation": "/Users/mono/.codebuddy/plugins/marketplaces/thedotmack_claude-mem",
+    "description": "Marketplace from thedotmack/claude-mem",
+    "lastUpdated": "2026-04-12T04:10:11.240Z",
+    "autoUpdate": false
+  },
+  "obra_superpowers-marketplace": {
+    "type": "github",
+    "source": {
+      "source": "github",
+      "repo": "obra/superpowers-marketplace"
+    },
+    "installLocation": "/Users/mono/.codebuddy/plugins/marketplaces/obra_superpowers-marketplace",
+    "description": "Marketplace from obra/superpowers-marketplace",
+    "lastUpdated": "2026-04-12T04:42:29.298Z",
+    "autoUpdate": false
+  },
+  "mvanhorn_last30days-skill": {
+    "type": "github",
+    "source": {
+      "source": "github",
+      "repo": "mvanhorn/last30days-skill"
+    },
+    "installLocation": "/Users/mono/.codebuddy/plugins/marketplaces/mvanhorn_last30days-skill",
+    "description": "Marketplace from mvanhorn/last30days-skill",
+    "lastUpdated": "2026-04-12T05:22:53.556Z",
+    "autoUpdate": false
+  }
+}
