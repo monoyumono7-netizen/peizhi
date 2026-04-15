@@ -1,0 +1,27 @@
+name: web-flow
+description: Production profile for frontend-web-flow enterprise wiki generation.
+
+module_priorities:
+  - stage
+  - components/chat
+  - components/workflow
+  - components/workflow/nodes
+  - components/workflow/hooks
+  - components/workflow/store
+  - services
+  - events
+  - cloud-agent
+  - components/design-app
+  - utils
+  - hooks
+
+required_topics:
+  - doc-streaming-generation
+  - ui-streaming-generation
+  - cloud-agent-events
+  - stage-runtime
+
+api_priorities:
+  - services
+  - cloud-agent
+  - events
