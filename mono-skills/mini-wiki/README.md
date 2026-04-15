@@ -130,6 +130,13 @@ Simply tell your AI Agent:
 🤖 "update wiki"
 ```
 
+If you want to run the production-oriented script path directly:
+
+```bash
+python scripts/generate_wiki.py /path/to/project
+python scripts/check_quality.py /path/to/project/.mini-wiki --json /path/to/project/.mini-wiki/quality-report.json
+```
+
 ### Update
 
 Already installed? Update to the latest version:
@@ -182,6 +189,12 @@ python scripts/plugin_manager.py enable <name>
 - **URL**: `https://example.com/plugin.zip`
 - **Local**: `./plugins/my-plugin`
 
+**Production safety defaults:**
+- Local plugin installation is allowed by default.
+- Remote plugin installation is disabled by default.
+- To allow remote installation explicitly, set `MINI_WIKI_ALLOW_REMOTE_INSTALL=1`.
+- Remote archives must be HTTPS, host-allowlisted, size-limited, and are extracted with path-safety checks.
+
 ### How Plugins Work
 
 Mini-Wiki uses an **Instruction-based Plugin System**. When you run a task:
@@ -219,8 +232,11 @@ All content is generated to `.mini-wiki/` directory:
 ├── 📂 wiki/                  # Wiki content
 │   ├── index.md
 │   ├── architecture.md
-│   ├── modules/
+│   ├── getting-started.md
+│   ├── doc-map.md
+│   ├── domains/
 │   └── api/
+├── 📄 quality-report.json    # Quality gate report
 └── 📂 i18n/                  # Multi-language support
     ├── en/
     └── zh/

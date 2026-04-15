@@ -43,11 +43,15 @@ description: |
 | 图表数量 | `max(1, ceil(file_count / 5))` |
 | 章节数 | `6 + module_role_weight`（core +4, util +2, config +1） |
 
-**每个文档必须包含**：
-- 层级标题（H2/H3/H4）+ 表格 + Mermaid 图表 + 交叉链接
-- **源码引用**（使用相对路径）：`[filename.ts L1-L50](../../../src/path/to/file.ts)`
-- 核心类/接口的 **classDiagram**
+**完整文档必须包含**：
+- 完整文档（`module-complete` / `api-complete`）：层级标题（H2/H3/H4）+ 表格 + Mermaid 图表 + 交叉链接
+- **有效源码追溯**（使用相对路径）：`[filename.ts L1-L50](../../../src/path/to/file.ts)`
+- 核心类/接口存在时必须提供 **classDiagram**
 - **"相关文档"** 章节
+
+**文档类型**：`overview` / `module-complete` / `topic` / `api-complete`
+**审阅状态**：`draft -> reviewed -> approved -> published`
+**说明**：`overview` 和 `topic` 不是完整模块文档，不按完整模块标准做覆盖判定
 
 **图表类型映射**：架构→`flowchart TB`，数据流→`sequenceDiagram`，状态→`stateDiagram-v2`，类→`classDiagram`，依赖→`flowchart LR`
 
@@ -208,10 +212,16 @@ description: |
 ```yaml
 generation:
   language: zh              # zh / en / both
+  doc_profile: module-complete  # overview / module-complete / topic / api-complete / auto
   detail_level: detailed    # minimal / standard / detailed
   include_diagrams: true
   include_examples: true
   min_sections: 10
+  
+governance:
+  review_status_default: approved  # approved / draft / reviewed
+  publish_requires_approval: false  # true / false
+  minimum_publish_quality: professional
 
 linking:
   source_link_style: relative  # relative / github_url

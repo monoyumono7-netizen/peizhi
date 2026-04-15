@@ -1,100 +1,110 @@
-# 代码引用规范
+# 图表与代码规范
 
-分析文档中的代码引用必须遵循以下规范，确保文档的可读性和教学性。
+分析文档中的图表和代码引用必须遵循以下规范。
 
-## 代码引用格式
+## 核心原则：图表优先，代码辅助
 
-### 标注格式
+- **图表是主要表达手段** — 先用图讲清楚流程、关系、状态变化
+- **代码是辅助说明** — 用精简代码帮助理解具体实现，不是文档主体
+- **目标是说清楚** — 不追求代码量，追求表达清晰
+
+## 图表规范
+
+### 图表丰富度要求
+
+每个文档至少包含 **2 种不同类型** 的 Mermaid 图（3 个相同类型的 flowchart 不满足要求）。
+
+| 文档类型 | 必选图 | 可选图 |
+|---------|--------|--------|
+| 架构总览 | flowchart TD（全景流程）+ flowchart LR（模块关系） | — |
+| 流程分析 | sequenceDiagram（模块交互） | stateDiagram-v2（状态变化）、flowchart（数据流转） |
+
+### 可用图表类型
+
+| 图表类型 | 适用场景 |
+|---------|---------|
+| `flowchart TD` | 流程步骤、架构分层 |
+| `flowchart LR` | 模块依赖、数据流向 |
+| `sequenceDiagram` | 模块间交互、请求/响应 |
+| `stateDiagram-v2` | 状态变化、生命周期 |
+| `classDiagram` | 类型结构、接口关系（可选） |
+| `erDiagram` | 数据模型关系（可选） |
+
+### Mermaid 语法安全规则
+
+**必须遵守，否则图表渲染会失败：**
+
+1. **Node labels 必须加引号**
+   ```mermaid
+   %% 正确
+   A["CLI Entry"] --> B["Source Index"]
+   %% 错误
+   A[CLI Entry] --> B[Source Index]
+   ```
+
+2. **Node ID 只用英文字母数字**
+   ```mermaid
+   %% 正确
+   CoreModule["核心模块"]
+   %% 错误
+   CoreModule.123["核心模块"]
+   ```
+
+3. **subgraph ID 用英文，不和 node ID 冲突**
+   ```mermaid
+   %% 正确
+   subgraph CL["CLI Layer"]
+       CLI["cli.ts"] --> C2["commands"]
+   end
+   %% 错误（subgraph ID "CLI" 和 node ID "CLI" 冲突）
+   subgraph CLI["CLI Layer"]
+       CLI["cli.ts"]
+   end
+   ```
+
+4. **内嵌引号用 HTML entity**
+   ```mermaid
+   %% 正确
+   A["Config &quot;key&quot; value"]
+   %% 错误
+   A["Config "key" value"]
+   ```
+
+5. **复杂度控制**
+   - 节点 ≤ 6：不需要分组
+   - 节点 7-12：用 subgraph 分组
+   - 节点 > 20：拆成多个图
+
+## 代码引用规范
+
+### 代码形式
+
+代码可以是以下任意形式，以说清楚逻辑为目标：
+
+- **真实代码片段** — 从源文件中摘取的关键代码
+- **伪代码** — 用自然语言 + 代码结构描述逻辑
+- **简化代码** — 省略细节，保留核心逻辑
+
+### 引用格式
 
 ```typescript
-// 📁 src/hooks/useExample.ts:15-25
-const useExample = () => {
-  // 👆 这里使用了 xxx 模式
-  const [state, setState] = useState()
-  // ...
+// 文件路径:行号范围（引用真实代码时标注）
+const example = () => {
+  // 关键逻辑说明
 }
 ```
 
-### Emoji 标记系统
+### Emoji 标记（可选）
 
 | 标记 | 含义 | 使用场景 |
 |-----|------|---------|
-| `📁` | 文件位置 | 每段代码开头标注文件路径和行号 |
-| `👆` | 关键点 | 标记当前行的重要概念 |
-| `👇` | 下文关键 | 提示下面代码的重点 |
 | `💡` | 设计意图 | 解释为什么这样写 |
 | `🔄` | 数据流向 | 标记数据流转方向 |
-| `⚠️` | 注意事项 | 容易踩坑的地方 |
-| `✨` | 亮点技巧 | 值得学习的写法 |
+| `⚠️` | 注意事项 | 容易出问题的地方 |
 
-## 代码引用原则
+### 代码量
 
-### 真实代码优先
-
-- **必须引用真实源码**，不可编造代码
-- 可以省略非关键部分（用 `// ...` 表示）
-- 伪代码仅在描述整体流程时作为辅助
-
-### 代码解释要求
-
-每段引用代码必须配有解释，包含：
-
-1. **做什么**（What）— 这段代码的功能
-2. **为什么**（Why）— 为什么这样实现
-3. **怎么做**（How）— 关键技术点
-
-**示例：**
-
-```markdown
-下面这段代码实现了请求取消机制：
-
-// 📁 hooks/use-cancellable-toolcall.ts:23-35
-export const useCancellableToolCall = (messages: Message[]) => {
-  // 💡 使用白名单判断工具是否可取消
-  const cancellableTools = messages
-    .filter(m => CANCELLABLE_WHITELIST.includes(m.toolName))
-    .filter(m => m.uiStatus === 'rendering')
-  // ✨ 只返回正在执行中的可取消工具
-  return { cancellableTools, hasCancellable: cancellableTools.length > 0 }
-}
-
-**技术要点：**
-- 白名单机制避免误取消关键工具
-- 只检测 `rendering` 状态，已完成的不可取消
-```
-
-### 代码量要求
-
-| 文档类型 | 代码占比 | 说明 |
-|---------|---------|------|
-| 架构总览 | 30-40% | 入口代码 + 核心流程代码链路 |
-| 模块分析 | 40-60% | 接口定义 + 实现细节 + 代码片段 |
-| 流程分析 | 50-60% | 逐步代码追踪为主 |
-
-### 流程追踪的代码链路
-
-流程分析中，必须完整展示代码调用链：
-
-```markdown
-### 步骤 1：用户触发操作
-
-// 📁 Component.tsx:45-52
-const handleClick = () => {
-  // 👇 调用 service 层
-  fetchData(params)
-}
-
-### 步骤 2：Service 层处理
-
-// 📁 services/api.ts:20-35
-export const fetchData = async (params) => {
-  // 🔄 数据流向：params -> request -> transform -> return
-  const response = await request.get('/api/xxx', params)
-  return transform(response)
-}
-
-### 步骤 3：状态更新
-// ...
-```
-
-每个步骤之间要有连贯的代码调用关系，读者应能顺着代码理解完整流程。
+不设硬性代码占比要求。原则：
+- 图表已经说清楚的，不需要再贴代码
+- 代码只在"图表无法表达的实现细节"时使用
+- 每段代码配简要文字说明

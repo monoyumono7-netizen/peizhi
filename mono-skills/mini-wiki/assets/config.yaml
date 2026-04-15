@@ -7,6 +7,15 @@ generation:
   link_to_source: true
   max_file_size: 100000
 
+plugins:
+  allow_remote_install: false
+  allow_http: false
+  max_download_bytes: 25000000
+  allowed_hosts:
+    - github.com
+    - codeload.github.com
+    - raw.githubusercontent.com
+
 exclude:
   - node_modules
   - .git
@@ -16,4 +25,7 @@ exclude:
   - __pycache__
   - venv
   - "*.test.ts"
+  - "*.test.tsx"
+  - "*.spec.ts"
   - "*.spec.js"
+  - "*.bak"

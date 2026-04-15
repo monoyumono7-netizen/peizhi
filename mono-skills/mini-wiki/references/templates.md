@@ -3,6 +3,42 @@
 本文件包含生成**专业级** Wiki 各页面的 Markdown 模板。
 
 > **核心原则**：每个模板都包含 **详细内容区域、Mermaid 图表、交叉链接**，确保生成的文档达到企业级标准。
+> **生产约束**：完整文档（`module-complete` / `api-complete`）应包含 frontmatter，至少声明 `doc_type`、`module_type`、`source_paths`、`owner`、`review_status`、`generated_at`、`quality_score`。`overview` / `topic` 可更轻量，不等于完整模块文档。
+
+## Frontmatter 规范
+
+```yaml
+---
+doc_type: module-complete
+module_type: workflow
+source_paths:
+  - src/components/workflow
+owner: team-webflow
+review_status: draft
+generated_at: 2026-04-02T00:00:00Z
+quality_score: pending
+---
+```
+
+## 文档类型与审阅状态
+
+| `doc_type` | 定义 | 说明 |
+|------------|------|------|
+| `overview` | 概览文档 | 入口、导览、总览，不视为完整模块文档 |
+| `module-complete` | 完整模块文档 | 覆盖职责、结构、图表、源码追溯与关联文档 |
+| `topic` | 主题文档 | 聚焦单个主题或局部流程，不要求完整模块覆盖 |
+| `api-complete` | 完整 API 文档 | 覆盖完整 API 签名、参数、返回值与示例 |
+
+| `review_status` | 含义 | 说明 |
+|-----------------|------|------|
+| `draft` | 草稿 | 初始状态，可继续编辑 |
+| `reviewed` | 已审阅 | 内容与来源已检查 |
+| `approved` | 已批准 | 满足发布前置条件 |
+| `published` | 已发布 | 对外可见，进入稳定维护 |
+
+审阅状态流转：`draft -> reviewed -> approved -> published`
+
+`overview` / `topic` 不是完整模块文档，不能按 `module-complete` 的覆盖率要求来判定质量。
 
 ## 目录
 
@@ -468,6 +504,8 @@ flowchart LR
 ---
 
 ## 模块文档模板
+
+适用于 `module-complete`。`overview` / `topic` 只用于入口或聚焦说明，不替代完整模块文档。
 
 ```markdown
 # {{ MODULE_NAME }}
@@ -1439,6 +1477,9 @@ generation:
   # 文档语言：zh / en / both
   language: zh
   
+  # 文档档位：overview / module-complete / topic / api-complete / auto
+  doc_profile: module-complete
+  
   # 内容详细程度：minimal / standard / detailed
   detail_level: detailed
   
@@ -1450,6 +1491,11 @@ generation:
   
   # 是否链接到源码
   link_to_source: true
+  
+  # 默认直接发布：通过质量门禁即可发布
+  # true: draft/reviewed 不能直接发布
+  # false: 允许在未审批时发布（默认）
+  publish_requires_approval: false
   
   # 单个文件最大处理大小（字节）
   max_file_size: 100000

@@ -1,229 +1,183 @@
 #!/usr/bin/env python3
 """
-Mermaid 图表生成脚本
-根据项目结构生成架构图、依赖图、模块关系图
+Mermaid diagram generator for Mini-Wiki.
+
+The generator consumes structure.json produced by analyze_project.py and keeps
+all generated diagrams Mermaid-safe.
 """
 
 import json
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+
+def safe_id(value: str) -> str:
+    sanitized = re.sub(r"[^a-zA-Z0-9_]", "_", value)
+    return sanitized or "node"
+
+
+def trim_modules(modules: List[Dict[str, Any]], limit: int) -> List[Dict[str, Any]]:
+    return sorted(modules, key=lambda item: item.get("importance", 0), reverse=True)[:limit]
+
+
+def render_subgraph(name: str, title: str, modules: List[Dict[str, Any]]) -> List[str]:
+    if not modules:
+        return []
+    lines = [f'    subgraph {name}["{title}"]']
+    for module in modules:
+        node_id = safe_id(module.get("slug", module.get("name", "module")))
+        label = module.get("slug", module.get("name", "module"))
+        lines.append(f'        {node_id}["{label}"]')
+    lines.append("    end")
+    return lines
 
 
 def generate_architecture_diagram(structure: Dict[str, Any]) -> str:
-    """
-    生成项目架构图
-    
-    Args:
-        structure: 项目结构数据 (来自 structure.json)
-    
-    Returns:
-        Mermaid 图表代码
-    """
-    modules = structure.get('modules', [])
-    project_type = structure.get('project_type', [])
-    
-    lines = ['```mermaid', 'flowchart TB']
-    
-    # 添加子图
-    if 'nodejs' in project_type or 'typescript' in project_type:
-        lines.append('    subgraph Frontend["前端层"]')
-        frontend_modules = [m for m in modules if any(p in m.get('path', '') 
-                          for p in ['components', 'pages', 'views', 'ui'])]
-        for m in frontend_modules[:5]:
-            safe_name = re.sub(r'[^a-zA-Z0-9]', '', m['name'])
-            lines.append(f'        {safe_name}["{m["name"]}"]')
-        if not frontend_modules:
-            lines.append('        UI["用户界面"]')
-        lines.append('    end')
-        lines.append('')
-    
-    lines.append('    subgraph Core["核心层"]')
-    core_modules = [m for m in modules if any(p in m.get('path', '') 
-                   for p in ['core', 'lib', 'services', 'api', 'src']) 
-                   and not any(p in m.get('path', '') 
-                   for p in ['components', 'pages', 'views', 'ui', 'utils'])]
-    for m in core_modules[:5]:
-        safe_name = re.sub(r'[^a-zA-Z0-9]', '', m['name'])
-        lines.append(f'        {safe_name}["{m["name"]}"]')
-    if not core_modules:
-        lines.append('        Logic["业务逻辑"]')
-    lines.append('    end')
-    lines.append('')
-    
-    lines.append('    subgraph Utils["工具层"]')
-    util_modules = [m for m in modules if any(p in m.get('path', '') 
-                   for p in ['utils', 'helpers', 'common', 'shared'])]
-    for m in util_modules[:3]:
-        safe_name = re.sub(r'[^a-zA-Z0-9]', '', m['name'])
-        lines.append(f'        {safe_name}["{m["name"]}"]')
-    if not util_modules:
-        lines.append('        Utilities["工具函数"]')
-    lines.append('    end')
-    lines.append('')
-    
-    # 添加连接
-    lines.append('    Frontend --> Core')
-    lines.append('    Core --> Utils')
-    
-    lines.append('```')
-    return '\n'.join(lines)
+    modules = structure.get("modules", [])
+    ui_modules = trim_modules([module for module in modules if module.get("module_type") in {"ui", "routing", "hooks"}], 6)
+    workflow_modules = trim_modules([module for module in modules if module.get("module_type") in {"workflow", "state", "event"}], 6)
+    service_modules = trim_modules([module for module in modules if module.get("module_type") in {"api", "ai", "media"}], 6)
+    shared_modules = trim_modules([module for module in modules if module.get("module_type") in {"utility", "types", "config"}], 6)
+    native_modules = trim_modules([module for module in modules if "stage/" in module.get("path", "") or "kiwi" in module.get("path", "")], 4)
+
+    lines = ["```mermaid", "flowchart TB"]
+    sections = [
+        ("UI", "界面层", ui_modules),
+        ("Workflow", "工作流层", workflow_modules),
+        ("Services", "服务层", service_modules),
+        ("Shared", "共享层", shared_modules),
+        ("Native", "Native/WASM 层", native_modules),
+    ]
+
+    active_sections = [name for name, title, section_modules in sections if section_modules]
+    for name, title, section_modules in sections:
+        lines.extend(render_subgraph(name, title, section_modules))
+        if section_modules:
+            lines.append("")
+
+    if not active_sections:
+        lines.extend(
+            [
+                '    App["应用"]',
+                '    Logic["业务逻辑"]',
+                '    Utils["工具模块"]',
+                "    App --> Logic",
+                "    Logic --> Utils",
+            ]
+        )
+    else:
+        if "UI" in active_sections and "Workflow" in active_sections:
+            lines.append("    UI --> Workflow")
+        if "Workflow" in active_sections and "Services" in active_sections:
+            lines.append("    Workflow --> Services")
+        if "Services" in active_sections and "Shared" in active_sections:
+            lines.append("    Services --> Shared")
+        elif "Workflow" in active_sections and "Shared" in active_sections:
+            lines.append("    Workflow --> Shared")
+        if "Workflow" in active_sections and "Native" in active_sections:
+            lines.append("    Workflow --> Native")
+
+    lines.append("```")
+    return "\n".join(lines)
 
 
 def generate_module_dependency_diagram(module_name: str, dependencies: Dict[str, List[str]]) -> str:
-    """
-    生成模块依赖关系图
-    
-    Args:
-        module_name: 模块名称
-        dependencies: 依赖关系 {"internal": [...], "external": [...]}
-    
-    Returns:
-        Mermaid 图表代码
-    """
-    lines = ['```mermaid', 'graph LR']
-    
-    safe_name = re.sub(r'[^a-zA-Z0-9]', '', module_name)
-    lines.append(f'    {safe_name}["{module_name}"]')
-    
-    # 内部依赖
-    internal = dependencies.get('internal', [])
-    for i, dep in enumerate(internal[:8]):
-        dep_name = Path(dep).stem
-        safe_dep = re.sub(r'[^a-zA-Z0-9]', '', dep_name) + str(i)
-        lines.append(f'    {safe_name} --> {safe_dep}["{dep_name}"]')
-    
-    # 外部依赖
-    external = dependencies.get('external', [])
-    if external:
-        lines.append(f'    {safe_name} --> ext["外部依赖"]')
-        for i, dep in enumerate(external[:5]):
-            safe_dep = re.sub(r'[^a-zA-Z0-9]', '', dep) + 'ext' + str(i)
-            lines.append(f'    ext --> {safe_dep}["{dep}"]')
-    
-    lines.append('```')
-    return '\n'.join(lines)
+    lines = ["```mermaid", "flowchart LR"]
+    root_id = safe_id(module_name)
+    lines.append(f'    {root_id}["{module_name}"]')
+
+    for index, dependency in enumerate(dependencies.get("internal", [])[:8]):
+        dep_label = Path(dependency).stem or dependency
+        dep_id = f"{safe_id(dep_label)}_{index}"
+        lines.append(f'    {root_id} --> {dep_id}["{dep_label}"]')
+
+    externals = dependencies.get("external", [])[:5]
+    if externals:
+        lines.append(f'    {root_id} --> ext_{root_id}["外部依赖"]')
+        for index, dependency in enumerate(externals):
+            dep_id = f"ext_{safe_id(dependency)}_{index}"
+            lines.append(f'    ext_{root_id} --> {dep_id}["{dependency}"]')
+
+    lines.append("```")
+    return "\n".join(lines)
 
 
-def generate_file_tree_diagram(structure: Dict[str, Any], max_depth: int = 3) -> str:
-    """
-    生成目录结构图
-    
-    Args:
-        structure: 项目结构数据
-        max_depth: 最大深度
-    
-    Returns:
-        Mermaid 图表代码 (使用 mindmap)
-    """
-    modules = structure.get('modules', [])
-    
-    lines = ['```mermaid', 'mindmap', '  root((项目))']
-    
-    for module in modules[:10]:
-        name = module.get('name', 'unnamed')
-        path = module.get('path', '')
-        files_count = module.get('files', 0)
-        lines.append(f'    {name}')
-        lines.append(f'      {files_count} 个文件')
-    
-    lines.append('```')
-    return '\n'.join(lines)
+def generate_file_tree_diagram(structure: Dict[str, Any]) -> str:
+    modules = trim_modules(structure.get("modules", []), 12)
+    lines = ["```mermaid", "mindmap", '  root(("项目结构"))']
+    for module in modules:
+        lines.append(f'    "{module.get("slug", module.get("name", "module"))}"')
+        lines.append(f'      "{module.get("source_files", 0)} files / {module.get("source_lines", 0)} lines"')
+    lines.append("```")
+    return "\n".join(lines)
 
 
-def generate_data_flow_diagram(entry_points: List[str], modules: List[Dict]) -> str:
-    """
-    生成数据流序列图
-    
-    Args:
-        entry_points: 入口文件列表
-        modules: 模块列表
-    
-    Returns:
-        Mermaid 序列图代码
-    """
-    lines = ['```mermaid', 'sequenceDiagram']
-    
-    lines.append('    participant U as 用户')
-    lines.append('    participant E as 入口')
-    
-    if modules:
-        for i, module in enumerate(modules[:3]):
-            name = module.get('name', f'Module{i}')
-            safe_name = re.sub(r'[^a-zA-Z0-9]', '', name)
-            lines.append(f'    participant {safe_name} as {name}')
-    
-    lines.append('')
-    lines.append('    U->>E: 请求')
-    
-    if modules:
-        prev = 'E'
-        for i, module in enumerate(modules[:3]):
-            name = module.get('name', f'Module{i}')
-            safe_name = re.sub(r'[^a-zA-Z0-9]', '', name)
-            lines.append(f'    {prev}->>{safe_name}: 调用')
-            prev = safe_name
-        lines.append(f'    {prev}-->>U: 响应')
-    else:
-        lines.append('    E-->>U: 响应')
-    
-    lines.append('```')
-    return '\n'.join(lines)
+def generate_data_flow_diagram(entry_points: List[str], modules: List[Dict[str, Any]]) -> str:
+    lines = ["```mermaid", "sequenceDiagram", "    participant User as 用户", "    participant Entry as 入口"]
+    chain = trim_modules(
+        [module for module in modules if module.get("module_type") in {"routing", "workflow", "api", "ai", "state"}],
+        4,
+    )
+    for module in chain:
+        alias = safe_id(module.get("slug", module.get("name", "module")))
+        label = module.get("slug", module.get("name", "module"))
+        lines.append(f"    participant {alias} as {label}")
+
+    lines.append("")
+    lines.append("    User->>Entry: 打开页面 / 触发操作")
+
+    previous = "Entry"
+    for module in chain:
+        alias = safe_id(module.get("slug", module.get("name", "module")))
+        lines.append(f"    {previous}->>{alias}: 调用")
+        previous = alias
+
+    lines.append(f"    {previous}-->>User: 返回结果")
+    lines.append("```")
+    return "\n".join(lines)
 
 
 def generate_class_diagram(classes: List[Dict[str, Any]]) -> str:
-    """
-    生成类图
-    
-    Args:
-        classes: 类信息列表 [{"name": "ClassName", "methods": [...], "properties": [...]}]
-    
-    Returns:
-        Mermaid 类图代码
-    """
-    lines = ['```mermaid', 'classDiagram']
-    
+    lines = ["```mermaid", "classDiagram"]
     for cls in classes[:10]:
-        name = cls.get('name', 'Unknown')
-        safe_name = re.sub(r'[^a-zA-Z0-9]', '', name)
-        lines.append(f'    class {safe_name} {{')
-        
-        for prop in cls.get('properties', [])[:5]:
-            lines.append(f'        +{prop}')
-        
-        for method in cls.get('methods', [])[:5]:
-            lines.append(f'        +{method}()')
-        
-        lines.append('    }')
-    
-    lines.append('```')
-    return '\n'.join(lines)
+        class_name = cls.get("name", "Unknown")
+        alias = safe_id(class_name)
+        lines.append(f"    class {alias} {{")
+        for prop in cls.get("properties", [])[:5]:
+            lines.append(f"        +{prop}")
+        for method in cls.get("methods", [])[:5]:
+            lines.append(f"        +{method}()")
+        lines.append("    }")
+    lines.append("```")
+    return "\n".join(lines)
 
 
 def load_structure(wiki_dir: str) -> Optional[Dict[str, Any]]:
-    """加载项目结构数据"""
     structure_path = Path(wiki_dir) / "cache" / "structure.json"
-    if structure_path.exists():
-        with open(structure_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return None
+    if not structure_path.exists():
+        return None
+    try:
+        return json.loads(structure_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
-    
+
     if len(sys.argv) < 2:
         print("用法: python generate_diagram.py <.mini-wiki目录>")
-        sys.exit(1)
-    
+        raise SystemExit(1)
+
     wiki_dir = sys.argv[1]
     structure = load_structure(wiki_dir)
-    
-    if structure:
-        print("=== 架构图 ===")
-        print(generate_architecture_diagram(structure))
-        print()
-        print("=== 目录结构图 ===")
-        print(generate_file_tree_diagram(structure))
-    else:
+    if not structure:
         print("未找到项目结构数据")
+        raise SystemExit(1)
+
+    print("=== 架构图 ===")
+    print(generate_architecture_diagram(structure))
+    print()
+    print("=== 目录结构图 ===")
+    print(generate_file_tree_diagram(structure))

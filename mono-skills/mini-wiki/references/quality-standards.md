@@ -7,9 +7,12 @@
 
 ## Table of Contents
 
+- [Document Taxonomy / 文档类型定义](#document-taxonomy--文档类型定义)
+- [Review State Machine / 审阅状态机](#review-state-machine--审阅状态机)
 - [Dynamic Quality Standards / 动态质量标准](#dynamic-quality-standards--动态质量标准)
 - [Quality Levels / 质量等级定义](#quality-levels--质量等级定义)
-- [Required Sections / 模块文档必需章节](#required-sections--模块文档必需章节)
+- [Hard Requirements / 完整文档硬性要求](#hard-requirements--完整文档硬性要求)
+- [Required Sections / 完整文档章节要求](#required-sections--完整文档章节要求)
 - [Diagram Requirements / 图表要求](#diagram-requirements--图表要求)
 - [Source Traceability / 源码追溯规范](#source-traceability--源码追溯规范)
 - [Code Example Standards / 代码示例标准](#code-example-standards--代码示例标准)
@@ -19,6 +22,41 @@
 - [Mermaid Diagram Standards / Mermaid 图表规范](#mermaid-diagram-standards--mermaid-图表规范)
 
 ---
+
+## Document Taxonomy / 文档类型定义
+
+| `doc_type` | 含义 | 覆盖范围 | 适用场景 |
+|------------|------|----------|----------|
+| `overview` | 入口/概览文档 | 只做导航与总览，不视为完整模块文档 | 项目首页、模块入口页、快速导览 |
+| `module-complete` | 完整模块文档 | 覆盖模块职责、结构、API、图表、关联文档 | 核心模块、主业务模块 |
+| `topic` | 主题文档 | 聚焦单一主题、子能力或局部流程，不要求覆盖整个模块 | 机制说明、专题分析、局部流程 |
+| `api-complete` | 完整 API 文档 | 覆盖对外 API 的完整签名与用法 | SDK、库、服务接口 |
+
+**约束**：
+- `overview` 和 `topic` 不是完整模块文档，不以完整覆盖率作为目标
+- 只有 `module-complete` 和 `api-complete` 才进入完整文档硬性检查
+
+## Review State Machine / 审阅状态机
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft
+    draft --> reviewed: 内容检查通过
+    reviewed --> approved: 治理审批通过
+    approved --> published: 允许发布
+```
+
+| 状态 | 含义 | 允许动作 |
+|------|------|----------|
+| `draft` | 草稿 | 继续生成、补充、修订 |
+| `reviewed` | 已审阅 | 修正问题、提交审批 |
+| `approved` | 已批准 | 满足发布前置条件 |
+| `published` | 已发布 | 对外可见、进入稳定维护 |
+
+**发布约束**：
+- 默认策略是“质量通过即可发布”：当 `governance.publish_requires_approval = false` 时，文档只要满足质量门禁即可直接进入 `published`
+- 当团队需要更严格治理时，可显式开启 `governance.publish_requires_approval = true`，此时 `draft` 和 `reviewed` 不能直接发布
+- 如果启用了审批流，`published` 必须能追溯到最近一次 `approved`
 
 ## Dynamic Quality Standards / 动态质量标准
 
@@ -118,22 +156,36 @@
 
 ---
 
-## Required Sections / 模块文档必需章节
+## Hard Requirements / 完整文档硬性要求
+
+以下规则对 `module-complete` 与 `api-complete` 文档是**致命要求**，任一缺失都视为不合格：
+
+| 硬性要求 | 适用文档 | 规则 |
+|----------|----------|------|
+| 有效源码追溯 | `module-complete` / `api-complete` | 每个关键结论、接口、示例必须能定位到真实源码；禁止仅给出无来源概述 |
+| 规定图表 | `module-complete` / `api-complete` | 必须包含与内容匹配的图表；当文档存在 class / interface 时，必须提供 `classDiagram` |
+| 相关文档 | `module-complete` / `api-complete` | 必须包含「相关文档」章节，至少列出内部关联文档；必要时补充外部参考 |
+
+**判定规则**：
+- 缺失任一硬性要求，文档不得标记为 `reviewed`、`approved` 或 `published`
+- `overview` 与 `topic` 可按需要精简，不适用完整文档的硬性覆盖要求
+
+## Required Sections / 完整文档章节要求
 
 根据模块角色动态决定必需章节。`✅` 表示必需，`⚡` 表示推荐，`-` 表示可省略。
 
-| 章节 | `core` | `util` | `config` | 说明 |
-|------|--------|--------|----------|------|
-| 概述（Overview） | ✅ | ✅ | ✅ | 模块定位、职责边界、一句话描述 |
-| 核心功能（Core Features） | ✅ | ✅ | ⚡ | 主要功能点列举与说明 |
-| 目录结构（Directory Structure） | ✅ | ⚡ | - | 文件组织方式、各文件职责 |
-| API / 接口（API Reference） | ✅ | ✅ | ⚡ | 导出函数、类、类型的详细签名 |
-| 代码示例（Code Examples） | ✅ | ✅ | ⚡ | 可运行的使用示例 |
-| 最佳实践（Best Practices） | ✅ | ⚡ | - | 推荐用法、常见模式 |
-| 性能优化（Performance） | ✅ | - | - | 性能关键点、优化建议 |
-| 错误处理（Error Handling） | ✅ | ⚡ | - | 错误类型、异常处理策略 |
-| 依赖关系（Dependencies） | ✅ | ✅ | ✅ | 上下游依赖、版本要求 |
-| 相关文档（Related Docs） | ✅ | ✅ | ✅ | 关联模块文档的交叉引用链接 |
+| 章节 | `module-complete` | `api-complete` | `topic` | `overview` | 说明 |
+|------|-------------------|----------------|---------|------------|------|
+| 概述（Overview） | ✅ | ⚡ | ✅ | ✅ | 定位、边界、摘要 |
+| 核心功能（Core Features） | ✅ | ⚡ | ⚡ | - | 主要能力与特性 |
+| 目录结构（Directory Structure） | ✅ | - | ⚡ | - | 文件组织与职责 |
+| API / 接口（API Reference） | ✅ | ✅ | ⚡ | - | 导出签名与使用方式 |
+| 代码示例（Code Examples） | ✅ | ✅ | ⚡ | - | 可运行示例 |
+| 最佳实践（Best Practices） | ✅ | ⚡ | ⚡ | - | 推荐用法与约束 |
+| 性能优化（Performance） | ✅ | ⚡ | - | - | 性能关键点 |
+| 错误处理（Error Handling） | ✅ | ⚡ | ⚡ | - | 错误类型与恢复策略 |
+| 依赖关系（Dependencies） | ✅ | ✅ | ⚡ | - | 上下游依赖 |
+| 相关文档（Related Docs） | ✅ | ✅ | ✅ | ⚡ | 交叉引用链接 |
 
 **章节数计算**：
 - `core`：10 个章节全部必需（6 + 4 = 10）
@@ -155,6 +207,11 @@
 | 类/接口关系 | 类图 | `classDiagram` | 类继承、接口实现、组合关系 |
 | 依赖关系 | 流程图（左到右） | `flowchart LR` | 模块间依赖、包依赖 |
 
+**补充规则**：
+- `module-complete` 与 `api-complete` 必须至少包含一张与主题匹配的图表
+- 当文档中存在 class / interface 描述时，必须追加 `classDiagram`
+- 图表缺失在完整文档中按致命缺陷处理
+
 ### 图表数量指导
 
 | 模块文件数 | 最少图表数 | 推荐图表组合 |
@@ -167,6 +224,8 @@
 ---
 
 ## Source Traceability / 源码追溯规范
+
+有效的源码追溯是完整文档的前提，不允许只有结论没有来源。
 
 ### 路径格式
 
@@ -276,7 +335,7 @@ bus.emit('login', { id: 123 });
 
 ## classDiagram Standards / classDiagram 规范
 
-对每个核心 class / interface 必须提供 classDiagram，遵循以下规范：
+对每个核心 class / interface，且在 `module-complete` / `api-complete` 文档中，必须提供 classDiagram，遵循以下规范：
 
 ### 基本结构
 
@@ -343,7 +402,7 @@ classDiagram
 
 ### 关联要求
 
-每份模块文档的「相关文档」章节必须包含：
+每份完整文档的「相关文档」章节必须包含：
 
 | 关联类型 | 说明 | 示例 |
 |----------|------|------|

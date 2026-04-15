@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple, Any
 from datetime import datetime, timezone
 
+from config_utils import DEFAULT_FILE_EXCLUDE_PATTERNS, get_effective_excludes, path_matches_patterns
+
 # 默认排除规则
 DEFAULT_EXCLUDES = {
     'node_modules', '.git', 'dist', 'build', '__pycache__',
@@ -24,11 +26,12 @@ CODE_EXTENSIONS = {
     '.py', '.pyi',
     '.go', '.rs', '.java', '.kt', '.scala',
     '.rb', '.php', '.cs', '.fs',
-    '.vue', '.svelte', '.astro'
+    '.vue', '.svelte', '.astro',
+    '.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp'
 }
 
 # 文档扩展名
-DOC_EXTENSIONS = {'.md', '.mdx', '.rst', '.txt'}
+DOC_EXTENSIONS = {'.md', '.mdx', '.rst', '.txt', '.yaml', '.yml', '.json'}
 
 
 def calculate_file_hash(file_path: str) -> str:
@@ -69,10 +72,15 @@ def scan_project_files(project_root: str, excludes: Set[str] = None) -> Dict[str
         excludes = DEFAULT_EXCLUDES
     
     root = Path(project_root)
+    exclude_dirs, exclude_patterns = get_effective_excludes(root, excludes, DEFAULT_FILE_EXCLUDE_PATTERNS)
     checksums = {}
     
     for file_path in root.rglob('*'):
-        if file_path.is_file() and should_include_file(file_path, excludes):
+        if (
+            file_path.is_file()
+            and should_include_file(file_path, exclude_dirs)
+            and not path_matches_patterns(file_path, root, exclude_patterns)
+        ):
             rel_path = str(file_path.relative_to(root))
             checksums[rel_path] = calculate_file_hash(str(file_path))
     

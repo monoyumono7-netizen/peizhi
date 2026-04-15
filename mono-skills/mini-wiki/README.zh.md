@@ -130,6 +130,13 @@ git clone https://github.com/trsoliu/mini-wiki.git
 🤖 "更新 wiki"
 ```
 
+如果你希望直接执行生产化脚本链路：
+
+```bash
+python scripts/generate_wiki.py /path/to/project
+python scripts/check_quality.py /path/to/project/.mini-wiki --json /path/to/project/.mini-wiki/quality-report.json
+```
+
 ### 更新
 
 已安装？更新到最新版本：
@@ -182,6 +189,12 @@ python scripts/plugin_manager.py enable <name>
 - **URL**: `https://example.com/plugin.zip`
 - **本地**: `./plugins/my-plugin`
 
+**生产安全默认值:**
+- 默认只允许本地插件安装。
+- 远程插件安装默认关闭。
+- 如需显式开启远程安装，设置 `MINI_WIKI_ALLOW_REMOTE_INSTALL=1`。
+- 远程归档必须为 HTTPS、命中允许主机列表、通过大小限制，并在解压时做路径安全校验。
+
 ### 插件工作原理
 
 Mini-Wiki 采用 **指令型插件系统**。当你运行任务时：
@@ -219,8 +232,11 @@ Mini-Wiki 采用 **指令型插件系统**。当你运行任务时：
 ├── 📂 wiki/                  # Wiki 内容
 │   ├── index.md
 │   ├── architecture.md
-│   ├── modules/
+│   ├── getting-started.md
+│   ├── doc-map.md
+│   ├── domains/
 │   └── api/
+├── 📄 quality-report.json    # 质量门禁报告
 └── 📂 i18n/                  # 多语言支持
     ├── en/
     └── zh/
